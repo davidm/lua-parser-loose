@@ -53,17 +53,19 @@ function PARSE.parse_scope(lx, f)
   while 1 do
     local c = lx:next()
     if c.tag == 'Eof' then break end
-    --print(c.lineinfo.first, c.lineinfo.last)
+    --print('DEBUG', c.lineinfo.first, c.lineinfo.last)
 
-    -- Detect start of new statement.
+    -- Detect end of previous statement
     if c.tag == 'Keyword' and (
        c[1] == 'break' or c[1] == 'goto' or c[1] == 'do' or c[1] == 'while' or
        c[1] == 'repeat' or c[1] == 'if' or c[1] == 'for' or c[1] == 'function' and lx:peek().tag == 'Id' or
-       c[1] == 'local' or c[1] == ';') or
+       c[1] == 'local' or c[1] == ';' or c[1] == 'until') or
        c.tag == 'Id' and
            (cprev.tag == 'Id' or
-            cprev.tag == 'Keyword' and (cprev[1] == ']' or cprev[1] == ')' or cprev[1] == '}'))
+            cprev.tag == 'Keyword' and (cprev[1] == ']' or cprev[1] == ')' or cprev[1] == '}') or
+            cprev.tag == 'Number')
     then
+      if scopes[#scopes].inside_until then scope_end() end
       f('Statement')
     end
     
@@ -71,11 +73,12 @@ function PARSE.parse_scope(lx, f)
     if c.tag == 'Keyword' then
     
       if c[1] == 'local' and lx:peek().tag == 'Keyword' and lx:peek()[1] == 'function' then
+        -- local function
         c = lx:next(); assert(c[1] == 'function')
         c = lx:next()
         f('Var', c[1], c.lineinfo)
-        parse_function_list()
         scope_begin()
+        parse_function_list()
       elseif c[1] == 'function' then
         if lx:peek()[1] == '(' then -- inline function
           parse_function_list()
@@ -90,6 +93,7 @@ function PARSE.parse_scope(lx, f)
             end
           end
           scope_begin()
+          parse_function_list()
         end
       elseif c[1] == 'local' then
         c = lx:next()
@@ -112,6 +116,8 @@ function PARSE.parse_scope(lx, f)
       elseif c[1] == 'else' then
         scope_end()
         scope_begin()
+      elseif c[1] == 'until' then
+        scopes[#scopes].inside_until = true
       elseif c[1] == '{' then
         scopes[#scopes].inside_table = true
       elseif c[1] == '}' then
@@ -147,13 +153,14 @@ function PARSE.parse_scope_resolve(lx, f)
   local vars = {}
   vars[PENDING] = {} -- vars that come into scope upon next statement
   PARSE.parse_scope(lx, function(op, name, lineinfo)
+    --print('DEBUG', op, name)
     local other
     if op == 'Var' then
       vars[name] = true
     elseif op == 'VarNext' then
       vars[PENDING][name] = true
     elseif op == 'Scope' then
-      vars = setmetatable({}, {__index=vars})
+      vars = setmetatable({[PENDING]={}}, {__index=vars})
     elseif op == 'Endscope' then
       vars = getmetatable(vars).__index
     elseif op == 'Id' then
