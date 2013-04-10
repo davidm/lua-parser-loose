@@ -1,0 +1,86 @@
+-- example of adding _ENV. prefix to globals.
+
+package.path = 'metalua/src/?.lua;' .. package.path
+local PARSE = require 'lua_parser_loose'
+
+
+local code = [[
+-- this is a comment. local x = y
+local s = "this is a string. local x = y"
+local x,y = 5
+print(x, a.b:b()[a])
+if y then
+  local z = 1
+  print(x,z)
+else
+  print(x,z)
+  do
+    local z = 1
+    print(x,z)
+  end
+  print(x,z)
+  for i=1,10 do
+    print(i)
+  end
+  for k,v in pairs(t) do
+    print(k,v,vv)
+  end
+  local function f(z,w)
+    return z+y+a+(function(w) return w^2 end)()
+  end
+  local g = function() return g end
+  local function h() return g, h end
+  function C:m(w) return w^2 end
+  -- tests of variable scope that starts on next statement.
+  local a = a
+  local b = a + b
+  b = c
+  local c = c + (c)(c)(c) c[c]=4
+  --table syntax
+  local a2 = {xx = yy + function() xx = yy end; xx = yy}
+  local a2 = {[xx]=yy}
+end
+]]
+
+assert(loadstring(code)) -- quick syntax check
+PARSE.replace_env(code, io.write)
+
+
+-- output:
+--[[
+-- this is a comment. local x = y
+local s = "this is a string. local x = y"
+local x,y = 5
+_ENV.print(_ENV.x, _ENV.a.b:b()[_ENV.a])
+if y then
+  local z = 1
+  _ENV.print(x,_ENV.z)
+else
+  _ENV.print(x,_ENV.z)
+  do
+    local z = 1
+    _ENV.print(x,z)
+  end
+  _ENV.print(x,z)
+  for i=1,10 do
+    _ENV.print(i)
+  end
+  for k,v in _ENV.pairs(_ENV.t) do
+    _ENV.print(k,v,_ENV.vv)
+  end
+  local function f(z,w)
+    return z+y+_ENV.a+(function(w) return w^2 end)()
+  end
+  local g = function() return _ENV.g end
+  local function h() return g, h end
+  function _ENV.C:m(w) return w^2 end
+  -- tests of variable scope that starts on next statement.
+  local a = _ENV.a
+  local b = a + _ENV.b
+  b = _ENV.c
+  local c = _ENV.c + (_ENV.c)(_ENV.c)(_ENV.c) c[c]=4
+  --table syntax
+  local a2 = {xx = _ENV.yy + function() _ENV.xx = _ENV.yy end; xx = _ENV.yy}
+  local a2 = {[_ENV.xx]=_ENV.yy}
+end
+--]]
