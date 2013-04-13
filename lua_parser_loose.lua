@@ -59,7 +59,7 @@ function PARSE.parse_scope(lx, f)
     if c.tag == 'Keyword' and (
        c[1] == 'break' or c[1] == 'goto' or c[1] == 'do' or c[1] == 'while' or
        c[1] == 'repeat' or c[1] == 'if' or c[1] == 'for' or c[1] == 'function' and lx:peek().tag == 'Id' or
-       c[1] == 'local' or c[1] == ';' or c[1] == 'until') or
+       c[1] == 'local' or c[1] == ';' or c[1] == 'until' or c[1] == 'return') or
        c.tag == 'Id' and
            (cprev.tag == 'Id' or
             cprev.tag == 'Keyword' and (cprev[1] == ']' or cprev[1] == ')' or cprev[1] == '}') or
