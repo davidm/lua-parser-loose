@@ -8,7 +8,8 @@ local PARSE = {}
 
 -- Only uses lexer portion of Metalua libraries.
 -- Does not user parser or generate AST or code.
-local LEX = require 'metalua.compiler.parser.lexer'
+local LEX  = require 'metalua.compiler.parser.lexer'
+local LEXG = require 'metalua.grammar.lexer'
 
 
 --[[
@@ -19,6 +20,8 @@ local LEX = require 'metalua.compiler.parser.lexer'
 
  Events generated:
    'Var', name, lineinfo - variable declaration that immediately comes into scope.
+   'VarSelf', name, lineinfo - same as 'Var' but for implicit 'self' parameter
+     in method definitions.  lineinfo is zero-width space after '('
    'VarNext', name, lineinfo - variable deflection that comes into scope upon next statement.
    'Id', name, lineinfo - reference to variable.
    'String', name - string or table field
@@ -40,8 +43,14 @@ function PARSE.parse_scope(lx, f)
     f('Endscope')
   end
   
-  local function parse_function_list()
+  local function parse_function_list(has_self)
     local c = lx:next(); assert(c[1] == '(')
+    if has_self then
+      local first = lx.posfact:get_position(c.lineinfo.first.offset+1)
+      local last  = lx.posfact:get_position(c.lineinfo.first.offset)  -- zero size
+      local lineinfo = LEXG.new_lineinfo(first, last)
+      f('VarSelf', 'self', lineinfo)
+    end
     c = lx:next()
     while c.tag == 'Id' do
       f('Var', c[1], c.lineinfo)
@@ -86,14 +95,17 @@ function PARSE.parse_scope(lx, f)
         else -- function definition statement
           c = lx:next(); assert(c.tag == 'Id')
           f('Id', c[1], c.lineinfo)
+          local has_self
           while lx:peek()[1] ~= '(' do
             c = lx:next()
             if c.tag == 'Id' then
               f('String', c[1])
+            elseif c.tag == 'Keyword' and c[1] == ':' then
+              has_self = true
             end
           end
           scope_begin()
-          parse_function_list()
+          parse_function_list(has_self)
         end
       elseif c[1] == 'local' then
         c = lx:next()
@@ -157,7 +169,7 @@ function PARSE.parse_scope_resolve(lx, f)
   PARSE.parse_scope(lx, function(op, name, lineinfo)
     --print('DEBUG', op, name)
     local other
-    if op == 'Var' then
+    if op == 'Var' or op == 'VarSelf' then
       vars[name] = true
     elseif op == 'VarNext' then
       vars[PENDING][name] = true
@@ -200,7 +212,7 @@ function PARSE.extract_vars(code, f)
     elseif op == 'Var' or op == 'VarNext' then
       gen(lineinfo.first.offset, lineinfo.last.offset+1)
       f('Var', name)
-    end
+    end  -- ignore 'VarSelf' and others
   end)
   gen(#code+1, nil)
 end
@@ -217,7 +229,7 @@ function PARSE.replace_env(code, f)
   PARSE.extract_vars(code, function(op, name, other)
     if op == 'Id' then
       f(other == 'global' and '_ENV.' .. name or name)
-    elseif op == 'Var' or op == 'VarNext' or op == 'Other' then
+    elseif op == 'Var' or op == 'Other' then
       f(name)
     end
   end)
