@@ -122,8 +122,9 @@ function PARSE.parse_scope(lx, f)
           c = lx:next(); c = lx:next()
           f('Var', c[1], c.lineinfo)
         end
-      elseif c[1] == 'do' or c[1] == 'while' or c[1] == 'repeat' or c[1] == 'then' then
+      elseif c[1] == 'do' or c[1] == 'repeat' or c[1] == 'then' then
         scope_begin()
+        -- note: 'do...end' and 'while...do...end' scope both begin at 'do'.
       elseif c[1] == 'end' or c[1] == 'elseif' then
         scope_end()
       elseif c[1] == 'else' then

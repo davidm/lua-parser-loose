@@ -28,7 +28,7 @@ elseif z then
   -- repeat until
   repeat local z = 1 until z == w
   -- while loop
-  while z == y do local z; print(w,z) end
+  do do local z while z do local zz zz() end z(zz) end z() end
   local function f(z,w)
     return z+y+a+(function(w) return w^2 end)()
   end
@@ -89,7 +89,7 @@ elseif _ENV.z then
   -- repeat until
   repeat local z = 1 until z == _ENV.w
   -- while loop
-  while _ENV.z == y do local z; _ENV.print(_ENV.w,z) end
+  do do local z while z do local zz zz() end z(_ENV.zz) end _ENV.z() end
   local function f(z,w)
     return z+y+_ENV.a+(function(w) return w^2 end)()
   end
