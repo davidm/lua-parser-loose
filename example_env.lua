@@ -50,6 +50,8 @@ elseif z then
   local a3 = a3 (a3) ; (a3)(a3)
   -- self
   function a.b:c(z) print(self,z,w) end
+  -- end of statement with '...'
+  do local z = ... a = z end
   print(z) -- ensure still global
 else
   print(z)
@@ -107,6 +109,8 @@ elseif _ENV.z then
   local a3 = _ENV.a3 (_ENV.a3) ; (a3)(a3)
   -- self
   function a.b:c(z) _ENV.print(self,z,_ENV.w) end
+  -- end of statement with '...'
+  do local z = ... a = z end
   _ENV.print(_ENV.z) -- ensure still global
 else
   _ENV.print(_ENV.z)
