@@ -51,9 +51,12 @@ elseif z then
   -- self
   function a.b:c(z) print(self,z,w) end
   -- end of statement
-  do local z = ... a = z end  -- with '...'
-  do local z = ""  a = z end  -- with string
-  do local z = 5   a = z end  -- with number
+  do local z = ... a = z end   -- with '...'
+  do local z = ""  a = z end   -- with string
+  do local z = 5   a = z end   -- with number
+  do local z = false a = z end -- with false
+  do local z = true  a = z end -- with true
+  do local z = nil   a = z end -- with nil
   do local z = function()end a = z end  -- with 'end'
   print(z) -- ensure still global
 else
@@ -113,9 +116,12 @@ elseif _ENV.z then
   -- self
   function a.b:c(z) _ENV.print(self,z,_ENV.w) end
   -- end of statement
-  do local z = ... a = z end  -- with '...'
-  do local z = ""  a = z end  -- with string
-  do local z = 5   a = z end  -- with number
+  do local z = ... a = z end   -- with '...'
+  do local z = ""  a = z end   -- with string
+  do local z = 5   a = z end   -- with number
+  do local z = false a = z end -- with false
+  do local z = true  a = z end -- with true
+  do local z = nil   a = z end -- with nil
   do local z = function()end a = z end  -- with 'end'
   _ENV.print(_ENV.z) -- ensure still global
 else
