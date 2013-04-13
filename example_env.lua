@@ -44,6 +44,7 @@ elseif z then
   local c = c + (c)(c)(c) c[c]=4
   -- table syntax
   local a2 = {xx = yy + function() xx = yy end; xx = yy}
+  local a2 = {{z=z}, z=z}  -- nested
   local a2 = {[xx]=yy}
   -- semicolon
   local a3 = a3 (a3) ; (a3)(a3)
@@ -98,6 +99,7 @@ elseif _ENV.z then
   local c = _ENV.c + (_ENV.c)(_ENV.c)(_ENV.c) c[c]=4
   -- table syntax
   local a2 = {xx = _ENV.yy + function() _ENV.xx = _ENV.yy end; xx = _ENV.yy}
+  local a2 = {{z=_ENV.z}, z=_ENV.z}  -- nested
   local a2 = {[_ENV.xx]=_ENV.yy}
   -- semicolon
   local a3 = _ENV.a3 (_ENV.a3) ; (a3)(a3)

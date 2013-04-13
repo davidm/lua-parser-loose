@@ -119,9 +119,11 @@ function PARSE.parse_scope(lx, f)
       elseif c[1] == 'until' then
         scopes[#scopes].inside_until = true
       elseif c[1] == '{' then
-        scopes[#scopes].inside_table = true
+        scopes[#scopes].inside_table = (scopes[#scopes].inside_table or 0) + 1
       elseif c[1] == '}' then
-        scopes[#scopes].inside_table = false
+        local newval = (scopes[#scopes].inside_table or 0) - 1
+        newval = newval >= 1 and newval or nil
+        scopes[#scopes].inside_table = newval
       end
     elseif c.tag == 'Id' then
       if scopes[#scopes].inside_table and lx:peek().tag == 'Keyword' and lx:peek()[1] == '=' then
