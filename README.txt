@@ -25,6 +25,11 @@ DESCRIPTION
   - The parsing code is designed so that parts of it may be reused for other
     purposes in other projects.
 
+  Language notes:
+  
+  - The deprecated Lua 5.0 "arg" variable representing variable
+    arguments (...) in a function is not specially recognized.
+
 STABILITY
 
   WARNING!!!
