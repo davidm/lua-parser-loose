@@ -24,7 +24,7 @@ elseif z then
   print(x,z)
   -- for loops
   for i=1,10 do print(i) end
-  for k,v in pairs(t) do print(k,v,vv) end
+  do for k,v in k do print(k,v) end k()v() end
   -- repeat until
   repeat local z = 1 until z == w
   -- while loop
@@ -86,7 +86,7 @@ elseif _ENV.z then
   _ENV.print(x,_ENV.z)
   -- for loops
   for i=1,10 do _ENV.print(i) end
-  for k,v in _ENV.pairs(_ENV.t) do _ENV.print(k,v,_ENV.vv) end
+  do for k,v in _ENV.k do _ENV.print(k,v) end _ENV.k()_ENV.v() end
   -- repeat until
   repeat local z = 1 until z == _ENV.w
   -- while loop

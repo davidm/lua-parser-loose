@@ -22,7 +22,10 @@ local LEXG = require 'metalua.grammar.lexer'
    'Var', name, lineinfo - variable declaration that immediately comes into scope.
    'VarSelf', name, lineinfo - same as 'Var' but for implicit 'self' parameter
      in method definitions.  lineinfo is zero-width space after '('
-   'VarNext', name, lineinfo - variable deflection that comes into scope upon next statement.
+   'VarNext', name, lineinfo - variable definition that comes into scope
+     upon next statement.
+   'VarInside', name, lineinfo - variable definition that comes into scope
+     inside following block.  Used for control variables in 'for' statements.
    'Id', name, lineinfo - reference to variable.
    'String', name - string or table field
    'Scope' - beginning of scope block
@@ -118,14 +121,14 @@ function PARSE.parse_scope(lx, f)
         end
       elseif c[1] == 'for' then
          c = lx:next()
-         f('Var', c[1], c.lineinfo)
+         f('VarInside', c[1], c.lineinfo)
          while lx:peek().tag == 'Keyword' and lx:peek()[1] == ',' do
           c = lx:next(); c = lx:next()
-          f('Var', c[1], c.lineinfo)
+          f('VarInside', c[1], c.lineinfo)
         end
       elseif c[1] == 'do' or c[1] == 'repeat' or c[1] == 'then' then
         scope_begin()
-        -- note: 'do...end' and 'while...do...end' scope both begin at 'do'.
+        -- note: do/while/for statement scopes all begin at 'do'.
       elseif c[1] == 'end' or c[1] == 'elseif' then
         scope_end()
       elseif c[1] == 'else' then
@@ -166,18 +169,29 @@ end
      (plus all events in parse_scope)
 --]]
 function PARSE.parse_scope_resolve(lx, f)
-  local PENDING = {} -- unique key
+  local NEXT = {}   -- unique key
+  local INSIDE = {} -- unique key
+  local function newscope(vars)
+    newvars = vars[INSIDE] or {}; vars[INSIDE] = false
+    newvars[INSIDE]=false
+    newvars[NEXT]=false
+    return setmetatable(newvars, {__index=vars})
+  end
+  
   local vars = {}
-  vars[PENDING] = {} -- vars that come into scope upon next statement
+  vars[NEXT] = false -- vars that come into scope upon next statement
+  vars[INSIDE] = false -- vars that come into scope upon entering block
   PARSE.parse_scope(lx, function(op, name, lineinfo)
     --print('DEBUG', op, name)
     local other
     if op == 'Var' or op == 'VarSelf' then
       vars[name] = true
     elseif op == 'VarNext' then
-      vars[PENDING][name] = true
+      vars[NEXT] = vars[NEXT] or {}; vars[NEXT][name] = true
+    elseif op == 'VarInside' then
+      vars[INSIDE] = vars[INSIDE] or {}; vars[INSIDE][name] = true
     elseif op == 'Scope' then
-      vars = setmetatable({[PENDING]={}}, {__index=vars})
+      vars = newscope(vars)
     elseif op == 'Endscope' then
       vars = getmetatable(vars).__index
     elseif op == 'Id' then
@@ -186,9 +200,9 @@ function PARSE.parse_scope_resolve(lx, f)
       --
     elseif op == 'Statement' then -- beginning of statement
       -- Apply vars that come into scope upon beginning of statement.
-      if next(vars[PENDING]) then
-        for k,v in pairs(vars[PENDING]) do
-          vars[k] = v; vars[PENDING][k] = nil
+      if vars[NEXT] then
+        for k,v in pairs(vars[NEXT]) do
+          vars[k] = v; vars[NEXT][k] = nil
         end
       end
     else
@@ -212,7 +226,7 @@ function PARSE.extract_vars(code, f)
     if op == 'Id' then
       gen(lineinfo.first.offset, lineinfo.last.offset+1)
       f('Id', name, other)
-    elseif op == 'Var' or op == 'VarNext' then
+    elseif op == 'Var' or op == 'VarNext' or op == 'VarInside' then
       gen(lineinfo.first.offset, lineinfo.last.offset+1)
       f('Var', name)
     end  -- ignore 'VarSelf' and others
