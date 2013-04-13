@@ -29,9 +29,9 @@ elseif z then
   repeat local z = 1 until z == w
   -- while loop
   do do local z while z do local zz zz() end z(zz) end z() end
-  local function f(z,w)
-    return z+y+a+(function(w) return w^2 end)()
-  end
+  -- function
+  local function f(z,w) return z+y+a+(function(w) return w^2 end)() end
+  do print(function(z) return z end,z); z() end -- anon
   -- local recursive scoping
   local g = function() return g end
   local function h() return g, h end
@@ -91,9 +91,9 @@ elseif _ENV.z then
   repeat local z = 1 until z == _ENV.w
   -- while loop
   do do local z while z do local zz zz() end z(_ENV.zz) end _ENV.z() end
-  local function f(z,w)
-    return z+y+_ENV.a+(function(w) return w^2 end)()
-  end
+  -- function
+  local function f(z,w) return z+y+_ENV.a+(function(w) return w^2 end)() end
+  do _ENV.print(function(z) return z end,_ENV.z); _ENV.z() end -- anon
   -- local recursive scoping
   local g = function() return _ENV.g end
   local function h() return g, h end

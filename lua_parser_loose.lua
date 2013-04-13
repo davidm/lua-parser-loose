@@ -92,8 +92,8 @@ function PARSE.parse_scope(lx, f)
         parse_function_list()
       elseif c[1] == 'function' then
         if lx:peek()[1] == '(' then -- inline function
-          parse_function_list()
           scope_begin()
+          parse_function_list()
         else -- function definition statement
           c = lx:next(); assert(c.tag == 'Id')
           f('Id', c[1], c.lineinfo)
