@@ -54,6 +54,7 @@ elseif z then
   do local z = ... a = z end  -- with '...'
   do local z = ""  a = z end  -- with string
   do local z = 5   a = z end  -- with number
+  do local z = function()end a = z end  -- with 'end'
   print(z) -- ensure still global
 else
   print(z)
@@ -115,6 +116,7 @@ elseif _ENV.z then
   do local z = ... a = z end  -- with '...'
   do local z = ""  a = z end  -- with string
   do local z = 5   a = z end  -- with number
+  do local z = function()end a = z end  -- with 'end'
   _ENV.print(_ENV.z) -- ensure still global
 else
   _ENV.print(_ENV.z)

@@ -72,7 +72,8 @@ function PARSE.parse_scope(lx, f)
        c.tag == 'Id' and
            (cprev.tag == 'Id' or
             cprev.tag == 'Keyword' and
-               (cprev[1] == ']' or cprev[1] == ')' or cprev[1] == '}' or cprev[1] == '...') or
+               (cprev[1] == ']' or cprev[1] == ')' or cprev[1] == '}' or
+                cprev[1] == '...' or cprev[1] == 'end') or
             cprev.tag == 'Number' or cprev.tag == 'String')
     then
       if scopes[#scopes].inside_until then scope_end() end
