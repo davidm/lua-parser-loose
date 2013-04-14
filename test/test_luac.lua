@@ -130,8 +130,6 @@ end
 
 local function check_file(file)
   local code = FS.readfile(file)
-  print(file)
-  
   local g_lpl = lpl_globals(code)
   local g_luac, luac_linenums = luac_globals(code)
   luac_fixup_linenumbers(g_luac, g_lpl, luac_linenums)
@@ -170,8 +168,10 @@ local ignore = {
 local num_failures = 0
 for _,file in ipairs(files) do
 if not ignore[file] then
-  local ok = check_file(file)
-  if not ok then num_failures = num_failures + 1 end
+  print(file)
+  local ok, ok2 = xpcall(function() check_file(file) end, debug.traceback)
+  if not ok then io.stderr:write('ERROR:', file, ': ', ok2) end
+  if not ok or not ok2 then num_failures = num_failures + 1 end
 end end
 
 if num_failures > 0 then
