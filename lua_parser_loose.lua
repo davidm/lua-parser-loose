@@ -11,6 +11,9 @@ local PARSE = {}
 local LEX  = require 'metalua.compiler.parser.lexer'
 local LEXG = require 'metalua.grammar.lexer'
 
+local function warn(message, position)
+  io.stderr:write('WARNING: ', tostring(position), ': ', message, '\n')
+end
 
 --[[
  Loose parser.
@@ -28,8 +31,8 @@ local LEXG = require 'metalua.grammar.lexer'
      inside following block.  Used for control variables in 'for' statements.
    'Id', name, lineinfo - reference to variable.
    'String', name - string or table field
-   'Scope' - beginning of scope block
-   'Endscope' - end of scope block
+   'Scope' - beginning of scope block [TODO: pass lineinfo like Endscope does?]
+   'Endscope', nil, lineinfo - end of scope block
 --]]
 function PARSE.parse_scope(lx, f)
   local cprev = {tag='Eof'}
@@ -41,9 +44,9 @@ function PARSE.parse_scope(lx, f)
     scopes[#scopes+1] = {}
     f('Scope')
   end
-  local function scope_end()
+  local function scope_end(lineinfo)
     table.remove(scopes)
-    f('Endscope')
+    f('Endscope', nil, lineinfo)
   end
   
   local function parse_function_list(has_self)
@@ -81,7 +84,7 @@ function PARSE.parse_scope(lx, f)
                 cprev[1] == 'nil') or
             cprev.tag == 'Number' or cprev.tag == 'String')
     then
-      if scopes[#scopes].inside_until then scope_end() end
+      if scopes[#scopes].inside_until then scope_end(c.lineinfo) end
       f('Statement')
     end
     
@@ -132,9 +135,9 @@ function PARSE.parse_scope(lx, f)
         scope_begin()
         -- note: do/while/for statement scopes all begin at 'do'.
       elseif c[1] == 'end' or c[1] == 'elseif' then
-        scope_end()
+        scope_end(c.lineinfo)
       elseif c[1] == 'else' then
-        scope_end()
+        scope_end(c.lineinfo)
         scope_begin()
       elseif c[1] == 'until' then
         scopes[#scopes].inside_until = true
@@ -195,7 +198,12 @@ function PARSE.parse_scope_resolve(lx, f)
     elseif op == 'Scope' then
       vars = newscope(vars)
     elseif op == 'Endscope' then
-      vars = getmetatable(vars).__index
+      local mt = getmetatable(vars)
+      if mt == nil then
+        warn("'end' without opening block.", lineinfo.first)
+      else
+        vars = mt.__index
+      end
     elseif op == 'Id' then
       if vars[name] then other = 'local' else other = 'global' end
     elseif op == 'String' then
@@ -245,6 +253,7 @@ end
   f(s) - call back function to send chunks of Lua code output to.  Example: io.stdout.
 --]]
 function PARSE.replace_env(code, f)
+  if not f then return PARSE.accumulate(PARSE.replace_env, code) end
   PARSE.extract_vars(code, function(op, name, other)
     if op == 'Id' then
       f(other == 'global' and '_ENV.' .. name or name)
@@ -252,6 +261,24 @@ function PARSE.replace_env(code, f)
       f(name)
     end
   end)
+end
+
+-- helper function.  Can be passed as argument `f` to functions
+-- like `replace_env` above to accumulate fragments into a single string.
+function PARSE.accumulator()
+  local ts = {}
+  local mt = {}
+  mt.__index = mt
+  function mt:__call(s) ts[#ts+1] = s end
+  function mt:result() return table.concat(ts) end
+  return setmetatable({}, mt)
+end
+
+-- helper function
+function PARSE.accumulate(g, code)
+  local accum = PARSE.accumulator()
+  g(code, accum)
+  return accum:result()
 end
 
 return PARSE
