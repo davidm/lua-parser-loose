@@ -31,7 +31,7 @@ end
      inside following block.  Used for control variables in 'for' statements.
    'Id', name, lineinfo - reference to variable.
    'String', name - string or table field
-   'Scope' - beginning of scope block [TODO: pass lineinfo like Endscope does?]
+   'Scope', opt - beginning of scope block
    'Endscope', nil, lineinfo - end of scope block
 --]]
 function PARSE.parse_scope(lx, f)
@@ -40,9 +40,9 @@ function PARSE.parse_scope(lx, f)
   -- stack of scopes.
   local scopes = {{}}
   
-  local function scope_begin()
+  local function scope_begin(opt)
     scopes[#scopes+1] = {}
-    f('Scope')
+    f('Scope', opt)
   end
   local function scope_end(lineinfo)
     if #scopes <= 1 then
@@ -135,9 +135,11 @@ function PARSE.parse_scope(lx, f)
           c = lx:next(); c = lx:next()
           f('VarInside', c[1], c.lineinfo)
         end
-      elseif c[1] == 'do' or c[1] == 'repeat' or c[1] == 'then' then
-        scope_begin()
+      elseif c[1] == 'do' then
+        scope_begin('do')
         -- note: do/while/for statement scopes all begin at 'do'.
+      elseif c[1] == 'repeat' or c[1] == 'then' then
+        scope_begin()
       elseif c[1] == 'end' or c[1] == 'elseif' then
         scope_end(c.lineinfo)
       elseif c[1] == 'else' then
@@ -180,8 +182,9 @@ end
 function PARSE.parse_scope_resolve(lx, f)
   local NEXT = {}   -- unique key
   local INSIDE = {} -- unique key
-  local function newscope(vars)
-    newvars = vars[INSIDE] or {}; vars[INSIDE] = false
+  local function newscope(vars, opt)
+    local newvars = opt=='do' and vars[INSIDE] or {}
+    if newvars == vars[INSIDE] then vars[INSIDE] = false end
     newvars[INSIDE]=false
     newvars[NEXT]=false
     return setmetatable(newvars, {__index=vars})
@@ -200,7 +203,7 @@ function PARSE.parse_scope_resolve(lx, f)
     elseif op == 'VarInside' then
       vars[INSIDE] = vars[INSIDE] or {}; vars[INSIDE][name] = true
     elseif op == 'Scope' then
-      vars = newscope(vars)
+      vars = newscope(vars, name)
     elseif op == 'Endscope' then
       local mt = getmetatable(vars)
       if mt == nil then

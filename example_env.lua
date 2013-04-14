@@ -25,6 +25,7 @@ elseif z then
   -- for loops
   for i=1,10 do print(i) end
   do for k,v in k do print(k,v) end k()v() end
+  for i = 1,(function() return i end) do i() end -- lambda control
   -- repeat until
   repeat local z = 1 until z == w
   -- while loop
@@ -85,6 +86,7 @@ elseif _ENV.z then
   -- for loops
   for i=1,10 do _ENV.print(i) end
   do for k,v in _ENV.k do _ENV.print(k,v) end _ENV.k()_ENV.v() end
+  for i = 1,(function() return _ENV.i end) do i() end -- lambda control
   -- repeat until
   repeat local z = 1 until z == _ENV.w
   -- while loop
