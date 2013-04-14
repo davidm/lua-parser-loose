@@ -28,6 +28,8 @@ elseif z then
   for i = 1,(function() return i end) do i() end -- lambda control
   -- repeat until
   repeat local z = 1 until z == w
+  do local z repeat until z end z()
+  do repeat repeat local z until z until z end z()
   -- while loop
   do do local z while z do local zz zz() end z(zz) end z() end
   -- function
@@ -89,6 +91,8 @@ elseif _ENV.z then
   for i = 1,(function() return _ENV.i end) do i() end -- lambda control
   -- repeat until
   repeat local z = 1 until z == _ENV.w
+  do local z repeat until z end _ENV.z()
+  do repeat repeat local z until z until _ENV.z end _ENV.z()
   -- while loop
   do do local z while z do local zz zz() end z(_ENV.zz) end _ENV.z() end
   -- function
