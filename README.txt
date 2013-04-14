@@ -2,11 +2,13 @@ DESCRIPTION
 
   lua_parser_loose
 
-  Demonstrates loose parsing of Lua code,
-  as may be useful for code interactively typed into a text editor.
+  Does loose parsing of Lua code.
+  If the code has syntax errors, the parse does not abort; rather,
+  some information (e.g. local and global variable scopes) is still inferred.
+  This may be useful for code interactively typed into a text editor.
   
-  This includes as an example a proof of concept of expanding Lua 5.2
-  code to Lua 5.1 code with explicit _ENV variable.  Example:
+  This includes as an example of expanding Lua 5.2
+  code to Lua 5.1 code with explicit _ENV variables.  Example:
  
     "function f(_ENV, x) print(x, y)" -->
     "function _ENV.f(_ENV, x) _ENV.print(x, _ENV.y) end"
@@ -18,10 +20,8 @@ DESCRIPTION
     Should work on broken code, such as that being interactively typed into
     a text editor.
   - Loose parsing makes this code somewhat hard to validate its correctness,
-    but I think this can be made robust over valid code and behave
-    acceptably on invalid code.
-    TODO: add tests.
-    It would be easier to use the strict Metalua parser, but I don't want to.
+    but tests are performed to verify robustness.
+    An alternative choice would be use to the strict Metalua parser (easier).
   - The parsing code is designed so that parts of it may be reused for other
     purposes in other projects.
 
@@ -32,9 +32,13 @@ DESCRIPTION
 
 STABILITY
 
-  WARNING!!!
-  Experimental code.  Proof of concept.  Not at all well tested currently.
-  Fix the code if you want to use in production.
+  This is fairly well tested, but the code is new and might still have errors.
+  Standard tests are performed in "test/test.lua".
+  More extensive tests are in "test/test_luac.lua", which validates the
+  parser's local/global variable detection against the luac bytecode
+  output listings.  test_luac.lua has been performed against the entire
+  LuaDist source code repository (about 2700 .lua files), or at least the
+  Lua files in it having no syntax errors.
 
 DEPENDENCIES/INSTALLATION
    

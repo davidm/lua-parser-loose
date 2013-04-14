@@ -1,6 +1,6 @@
 --[[
  loose_lua_parser.lua.
- WARNING: experimental code, not well tested.  See README.txt
+ Loose parsing of Lua code.  See README.
  (c) 2013 David Manura. MIT License.
 --]]
 
