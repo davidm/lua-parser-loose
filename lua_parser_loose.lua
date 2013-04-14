@@ -45,7 +45,11 @@ function PARSE.parse_scope(lx, f)
     f('Scope')
   end
   local function scope_end(lineinfo)
-    table.remove(scopes)
+    if #scopes <= 1 then
+      warn("'end' without opening block", lineinfo.first)
+    else
+      table.remove(scopes)
+    end
     f('Endscope', nil, lineinfo)
   end
   
