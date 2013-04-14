@@ -20,10 +20,19 @@ package.path = '../?.lua;../metalua/src/?.lua;' .. package.path
 local FS = require 'file_slurp'
 local LPL = require 'lua_parser_loose'
 
+-- parse arguments
+local args = {...}
+local silent, filename
+if args[1] == '-s' then
+  silent = true
+  table.remove(args, 1)
+end
+filename = args[1]
+
 -- select the directory to scan Lua code in.
---local source_path = arg[1] or 'Penlight/'
---local source_path = arg[1] or 'Repository/'
-local source_path = arg[1] or '../'
+--local source_path = filename or 'Penlight/'
+--local source_path = filename or 'Repository/'
+local source_path = filename or '../'
 
 local function find_lua_files(path)
   local cmd = "find "..path.." -name '*.lua'"
@@ -130,6 +139,12 @@ end
 
 local function check_file(file)
   local code = FS.readfile(file)
+  local ok, err = loadstring((code:gsub('^#![^\n]*', '')))
+  if not ok then
+    io.stderr:write('WARN: file broken: ', file, ' ', err, '\n')
+    return false
+  end
+  
   local g_lpl = lpl_globals(code)
   local g_luac, luac_linenums = luac_globals(code)
   luac_fixup_linenumbers(g_luac, g_lpl, luac_linenums)
@@ -151,27 +166,17 @@ local ignore = {
   ['Repository/busted/src/output/utf_terminal.lua']=true;
   ['Repository/busted/src/output/TAP.lua']=true;
   ['Repository/etree/src/etree.lua']=true;
-  -- intentionally broken files
-  ['Repository/busted/fail_spec/cl_compile_fail.lua']=true;
-  ['Repository/diluculum/Tests/SyntaxError.lua']=true;
-  ['Repository/lmock/todo.lua']=true;  --?
-  ['Repository/ldoc/tests/example/style/simple.lua']=true; -- ?
-  -- syntax extensions
-  ['Repository/gslshell/igsl.lua']=true;
-  ['Repository/gslshell/examples/nlinfit.lua']=true;
-  ['Repository/gslshell/examples/ode-example.lua']=true;
-  ['Repository/gslshell/tests/ode-test.lua']=true;
-  ['Repository/gslshell/tests/nlinfit-test.lua']=true;
-  ['Repository/gslshell/tests/ode-example-qdho.lua']=true;
-  ['Repository/gslshell/tests/ex-linalg.lua']=true;
+  ['Repository/numlua/matrix.lua']=true;
+  ['Repository/moonscript/moonscript/util.lua']=true;
+  ['Repository/moonscript/moonscript/types.lua']=true;
 }
 local num_failures = 0
 for _,file in ipairs(files) do
 if not ignore[file] then
-  print(file)
-  local ok, ok2 = xpcall(function() check_file(file) end, debug.traceback)
+  if not silent then print(file) end
+  local ok, ok2 = xpcall(function() return check_file(file) end, debug.traceback)
   if not ok then io.stderr:write('ERROR:', file, ': ', ok2) end
-  if not ok or not ok2 then num_failures = num_failures + 1 end
+  if not (ok and ok2) then num_failures = num_failures + 1 end
 end end
 
 if num_failures > 0 then
