@@ -13,24 +13,35 @@ end
 print(w)
 ]]
 
-PARSE.extract_vars(code, function(op, name, other)
-  if op == 'Id' then
-    io.write('<<', other, ':', name, '>>')
-  elseif op == 'Var' then
-    io.write('<<local:', name, '>>')
-  else
-    io.write(name)
-  end
-end)
-
-
--- output:
---[[
-<<local:x>><<local:y>>local x,y = # ( ( <<global:x>>
-<<local:x>><<local:w>> == 2
+local expected_out = [[
+local <<local:x>>,<<local:y>> = # ( ( <<global:x>>
+<<local:x>> == 2
 do !
-  ( local w)
+  ( local <<local:w>>)
   <<global:print>>(<<local:x>> ;;; <<local:y>> , <<global:z>>,,<<local:w>>)
 end
 <<global:print>>(<<global:w>>)
---]]
+]]
+
+
+local function mark_variables(code, f)
+  if f == nil then return PARSE.accumulate(mark_variables, code) end
+  PARSE.extract_vars(code, function(op, name, other)
+    if op == 'Id' then
+      f('<<' .. other ..  ':' .. name .. '>>')
+    elseif op == 'Var' then
+      f('<<local:' .. name .. '>>')
+    else
+      f(name)
+    end
+  end)
+end
+
+--local out = mark_variables(code, io.write)
+local out = mark_variables(code)
+
+if out ~= expected_out then
+  error('not match:\n'..out)
+end
+
+print 'DONE'

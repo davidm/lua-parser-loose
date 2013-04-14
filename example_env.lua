@@ -64,12 +64,7 @@ else
 end
 ]]
 
-assert(loadstring(code)) -- quick syntax check
-PARSE.replace_env(code, io.write)
-
-
--- output:
---[[
+local expected_out = [[
 -- this is a comment. local x = y
 local s = "this is a string. local x = y"
 local x,y = 5
@@ -127,4 +122,14 @@ elseif _ENV.z then
 else
   _ENV.print(_ENV.z)
 end
---]]
+]]
+
+assert(loadstring(code)) -- quick syntax check
+--PARSE.replace_env(code, io.write)
+local out = PARSE.replace_env(code)
+
+if out ~= expected_out then
+  error('not match:\n'..out)
+end
+
+print 'DONE'
