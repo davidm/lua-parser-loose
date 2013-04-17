@@ -39,15 +39,14 @@ STABILITY
   output listings.  test_luac.lua has been performed against the entire
   LuaDist source code repository (about 2700 .lua files), or at least the
   Lua files in it having no syntax errors.
+  
+  WARNING: The lexer (lua_lexer_loose) was recently replaced and is
+  not currently well tested.
 
 DEPENDENCIES/INSTALLATION
-   
-  Requires Lua libraries in the Metalua "refactoring" branch (2013-04-09).
-  To obtain this, do this in the root directory of this project:
-     git clone -b repackaging https://github.com/fab13n/metalua.git
-  No need to "make install".
-  
-  To test, just run "lua example.lua".
+
+  Copy lua_parser_loose.lua and lua_lexer_loose.lua into your Lua path.
+  To test, just run "lua test.lua" in the "test" folder.
 
 COPYRIGHT
 

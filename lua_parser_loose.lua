@@ -1,15 +1,15 @@
 --[[
- loose_lua_parser.lua.
+ lua_parser_loose.lua.
  Loose parsing of Lua code.  See README.
  (c) 2013 David Manura. MIT License.
 --]]
 
 local PARSE = {}
 
--- Only uses lexer portion of Metalua libraries.
--- Does not user parser or generate AST or code.
-local LEX  = require 'metalua.compiler.parser.lexer'
-local LEXG = require 'metalua.grammar.lexer'
+local LEX = require 'lua_lexer_loose'
+--old: lexer portion of Metalua libraries.
+--local LEX  = require 'metalua.compiler.parser.lexer'
+--local LEXG = require 'metalua.grammar.lexer'
 
 local function warn(message, position)
   io.stderr:write('WARNING: ', tostring(position), ': ', message, '\n')
@@ -46,7 +46,7 @@ function PARSE.parse_scope(lx, f)
   end
   local function scope_end(lineinfo)
     if #scopes <= 1 then
-      warn("'end' without opening block", lineinfo.first)
+      warn("'end' without opening block", lineinfo)
     else
       table.remove(scopes)
     end
@@ -56,9 +56,7 @@ function PARSE.parse_scope(lx, f)
   local function parse_function_list(has_self)
     local c = lx:next(); assert(c[1] == '(')
     if has_self then
-      local first = lx.posfact:get_position(c.lineinfo.first.offset+1)
-      local last  = lx.posfact:get_position(c.lineinfo.first.offset)  -- zero size
-      local lineinfo = LEXG.new_lineinfo(first, last)
+      local lineinfo = {c.lineinfo+1} -- zero size
       f('VarSelf', 'self', lineinfo)
     end
     c = lx:next()
@@ -72,7 +70,7 @@ function PARSE.parse_scope(lx, f)
   while 1 do
     local c = lx:next()
     if c.tag == 'Eof' then break end
-    --print('DEBUG', c.lineinfo.first, c.lineinfo.last)
+    --print('DEBUG', c.lineinfo)
 
     -- Detect end of previous statement
     if c.tag == 'Keyword' and (
@@ -207,7 +205,7 @@ function PARSE.parse_scope_resolve(lx, f)
     elseif op == 'Endscope' then
       local mt = getmetatable(vars)
       if mt == nil then
-        warn("'end' without opening block.", lineinfo.first)
+        warn("'end' without opening block.", lineinfo)
       else
         vars = mt.__index
       end
@@ -230,7 +228,7 @@ function PARSE.parse_scope_resolve(lx, f)
 end
 
 function PARSE.extract_vars(code, f)
-  local lx = LEX.lexer:newstream(code)
+  local lx = LEX.lexc(code)
   
   local char0 = 1  -- next char offset to write
   local function gen(char1, nextchar0)
@@ -241,10 +239,10 @@ function PARSE.extract_vars(code, f)
   PARSE.parse_scope_resolve(lx, function(op, name, lineinfo, other)
     --print(op, name, lineinfo, other)
     if op == 'Id' then
-      gen(lineinfo.first.offset, lineinfo.last.offset+1)
+      gen(lineinfo, lineinfo+#name)
       f('Id', name, other)
     elseif op == 'Var' or op == 'VarNext' or op == 'VarInside' then
-      gen(lineinfo.first.offset, lineinfo.last.offset+1)
+      gen(lineinfo, lineinfo+#name)
       f('Var', name)
     end  -- ignore 'VarSelf' and others
   end)
