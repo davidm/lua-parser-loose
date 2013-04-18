@@ -14,14 +14,17 @@ DESCRIPTION
     "function _ENV.f(_ENV, x) _ENV.print(x, _ENV.y) end"
 
   Characteristics of this code:
-  - Does not construct any AST but rather streams tokens.
-    Should be memory and space efficient on large files.
+  - Parsing does not construct any AST but rather streams tokens.
+    It should be memory efficient on large files.
+    It is also pretty fast.
   - Very loose parsing.
-    Should work on broken code, such as that being interactively typed into
-    a text editor.
+    Does not abort on broken code.
+    Scopes of local variables are still resolved even if the code is
+    not syntactically valid.
+  - Above characteristics make it suitable for use in a text editor,
+    where code may be interactively typed.
   - Loose parsing makes this code somewhat hard to validate its correctness,
     but tests are performed to verify robustness.
-    An alternative choice would be use to the strict Metalua parser (easier).
   - The parsing code is designed so that parts of it may be reused for other
     purposes in other projects.
 
@@ -29,6 +32,7 @@ DESCRIPTION
   
   - The deprecated Lua 5.0 "arg" variable representing variable
     arguments (...) in a function is not specially recognized.
+  - Some Lua 5.2 syntax features are not yet implemented.
 
 STABILITY
 
