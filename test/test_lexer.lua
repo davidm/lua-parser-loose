@@ -1,9 +1,10 @@
 -- test of lua_lexer_loose.lua
 -- 2013 D.Manura
 
-package.path = '../?.lua;' .. package.path
+package.path = '../?.lua;../metalua/src/?.lua;' .. package.path
 
 local LEX = require 'lua_lexer_loose'
+-- local LEX = require 'lua_lexer_loose_metalua' -- warning: tests fail
 
 local function split(code)
   local ts = {}

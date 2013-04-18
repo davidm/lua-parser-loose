@@ -47,6 +47,8 @@ DEPENDENCIES/INSTALLATION
 
   Copy lua_parser_loose.lua and lua_lexer_loose.lua into your Lua path.
   To test, just run "lua test.lua" in the "test" folder.
+  
+  There are no dependencies.
 
 COPYRIGHT
 

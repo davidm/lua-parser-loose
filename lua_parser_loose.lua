@@ -7,9 +7,9 @@
 local PARSE = {}
 
 local LEX = require 'lua_lexer_loose'
---old: lexer portion of Metalua libraries.
---local LEX  = require 'metalua.compiler.parser.lexer'
---local LEXG = require 'metalua.grammar.lexer'
+--local LEX = require 'lua_lexer_loose_metalua'
+
+
 
 local function warn(message, position)
   io.stderr:write('WARNING: ', tostring(position), ': ', message, '\n')
