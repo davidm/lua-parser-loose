@@ -1,6 +1,6 @@
 -- example of parsing broken Lua code.
 
-package.path = 'metalua/src/?.lua;' .. package.path
+package.path = '../lib/?.lua;' .. package.path
 local PARSE = require 'lua_parser_loose'
 
 local code = [[

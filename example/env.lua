@@ -1,6 +1,6 @@
 -- example of adding _ENV. prefix to globals.
 
-package.path = 'metalua/src/?.lua;' .. package.path
+package.path = '../lib/?.lua;' .. package.path
 local PARSE = require 'lua_parser_loose'
 
 

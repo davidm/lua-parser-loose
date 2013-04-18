@@ -2,6 +2,7 @@
 -- 2013 D.Manura
 
 package.path = '../?.lua;../metalua/src/?.lua;' .. package.path
+--package.path = '../metalua/src/?.lua;' .. package.path
 
 local LEX = require 'lua_lexer_loose'
 -- local LEX = require 'lua_lexer_loose_metalua' -- warning: tests fail

@@ -15,7 +15,7 @@
  D.Manura, 2013-04.
 --]]
 
-package.path = '../?.lua;../metalua/src/?.lua;' .. package.path
+package.path = '../lib/?.lua;' .. package.path
 
 local FS = require 'file_slurp'
 local LPL = require 'lua_parser_loose'
