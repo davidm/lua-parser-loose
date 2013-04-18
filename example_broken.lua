@@ -44,4 +44,4 @@ if out ~= expected_out then
   error('not match:\n'..out)
 end
 
-print 'DONE'
+print 'OK'
