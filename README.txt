@@ -7,12 +7,6 @@ DESCRIPTION
   some information (e.g. local and global variable scopes) is still inferred.
   This may be useful for code interactively typed into a text editor.
   
-  This includes as an example of expanding Lua 5.2
-  code to Lua 5.1 code with explicit _ENV variables.  Example:
- 
-    "function f(_ENV, x) print(x, y)" -->
-    "function _ENV.f(_ENV, x) _ENV.print(x, _ENV.y) end"
-
   Characteristics of this code:
   - Parsing does not construct any AST but rather streams tokens.
     It should be memory efficient on large files.
@@ -43,7 +37,18 @@ STABILITY
   output listings.  test_luac.lua has been performed against the entire
   LuaDist source code repository (about 2700 .lua files), or at least the
   Lua files in it having no syntax errors.
-  
+
+EXAMPLES
+
+  This includes as an example of expanding Lua 5.2
+  code to Lua 5.1 code with explicit _ENV variables.  Example:
+ 
+    "function f(_ENV, x) print(x, y)" -->
+    "function _ENV.f(_ENV, x) _ENV.print(x, _ENV.y) end"
+    
+  See example/env.lua and example/lib/compat_envvar.lua.
+  Also see https://github.com/davidm/lua-compat-env .
+
 DEPENDENCIES/INSTALLATION
 
   Copy lua_parser_loose.lua and lua_lexer_loose.lua into your Lua path.

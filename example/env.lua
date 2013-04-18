@@ -1,6 +1,10 @@
--- example of adding _ENV. prefix to globals.
+--[[
+ example of adding _ENV. prefix to globals.
+ See also lib/env52.lua.
+ D.Manura, 2013-04
+--]]
 
-package.path = '../lib/?.lua;' .. package.path
+package.path = '../lib/?.lua;lib/?.lua;' .. package.path
 local PARSE = require 'lua_parser_loose'
 
 --[[
@@ -155,5 +159,8 @@ local out = replace_env(code)
 if out ~= expected_out then
   error('not match:\n'..out)
 end
+
+require 'compat_envvar':install_searcher()
+require 'foo'.f()
 
 print 'OK'

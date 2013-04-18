@@ -1,4 +1,4 @@
-package.path = '../lib/?.lua;../metalua/src/?.lua;' .. package.path
+package.path = '../lib/?.lua;../example/lib/?.lua;../metalua/src/?.lua;' .. package.path
 local PARSE = require 'lua_parser_loose'
 
 dofile 'test_lexer.lua'
