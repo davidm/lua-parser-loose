@@ -3,6 +3,24 @@
 package.path = '../lib/?.lua;' .. package.path
 local PARSE = require 'lua_parser_loose'
 
+--[[
+  Converts 5.2 code to 5.1 style code with explicit _ENV variables.
+  Example: "function f(_ENV, x) print(x, y)" -->
+            "function _ENV.f(_ENV, x) _ENV.print(x, _ENV.y) end"
+
+  code - string of Lua code.  Assumed to be valid Lua (FIX: 5.1 or 5.2?)
+  f(s) - call back function to send chunks of Lua code output to.  Example: io.stdout.
+--]]
+local function replace_env(code, f)
+  if not f then return PARSE.accumulate(replace_env, code) end
+  PARSE.extract_vars(code, function(op, name, other)
+    if op == 'Id' then
+      f(other == 'global' and '_ENV.' .. name or name)
+    elseif op == 'Var' or op == 'Other' then
+      f(name)
+    end
+  end)
+end
 
 local code = [[
 -- this is a comment. local x = y
@@ -132,7 +150,7 @@ end
 
 assert(loadstring(code)) -- quick syntax check
 --PARSE.replace_env(code, io.write)
-local out = PARSE.replace_env(code)
+local out = replace_env(code)
 
 if out ~= expected_out then
   error('not match:\n'..out)

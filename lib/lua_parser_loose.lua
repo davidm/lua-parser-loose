@@ -249,25 +249,6 @@ function PARSE.extract_vars(code, f)
   gen(#code+1, nil)
 end
 
---[[
-  Converts 5.2 code to 5.1 style code with explicit _ENV variables.
-  Example: "function f(_ENV, x) print(x, y)" -->
-            "function _ENV.f(_ENV, x) _ENV.print(x, _ENV.y) end"
-
-  code - string of Lua code.  Assumed to be valid Lua (FIX: 5.1 or 5.2?)
-  f(s) - call back function to send chunks of Lua code output to.  Example: io.stdout.
---]]
-function PARSE.replace_env(code, f)
-  if not f then return PARSE.accumulate(PARSE.replace_env, code) end
-  PARSE.extract_vars(code, function(op, name, other)
-    if op == 'Id' then
-      f(other == 'global' and '_ENV.' .. name or name)
-    elseif op == 'Var' or op == 'Other' then
-      f(name)
-    end
-  end)
-end
-
 -- helper function.  Can be passed as argument `f` to functions
 -- like `replace_env` above to accumulate fragments into a single string.
 function PARSE.accumulator()
