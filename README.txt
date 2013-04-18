@@ -40,9 +40,6 @@ STABILITY
   LuaDist source code repository (about 2700 .lua files), or at least the
   Lua files in it having no syntax errors.
   
-  WARNING: The lexer (lua_lexer_loose) was recently replaced and is
-  not currently well tested.
-
 DEPENDENCIES/INSTALLATION
 
   Copy lua_parser_loose.lua and lua_lexer_loose.lua into your Lua path.
